@@ -24,8 +24,7 @@ jobs:
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v2
         with:
-          projectKey: nodejs-github-actions  
-          organization: nodejs-github-actions 
+          args: -Dsonar.projectKey=nodejs-github-actions -Dsonar.organization=nodejs-github-actions -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
