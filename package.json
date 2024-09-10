@@ -1,0 +1,20 @@
+{
+  "name": "nodejs-github-actions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Srikanth-Telus/nodejs-github-actions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Srikanth-Telus/nodejs-github-actions/issues"
+  },
+  "homepage": "https://github.com/Srikanth-Telus/nodejs-github-actions#readme"
+}
