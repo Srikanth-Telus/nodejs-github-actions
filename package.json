@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Srikanth-Telus/nodejs-github-actions/issues"
   },
-  "homepage": "https://github.com/Srikanth-Telus/nodejs-github-actions#readme"
+  "homepage": "https://github.com/Srikanth-Telus/nodejs-github-actions#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
 }
