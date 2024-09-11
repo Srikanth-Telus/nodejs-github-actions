@@ -69,3 +69,17 @@ jobs:
         run: |
           docker tag nodejs:v1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:v1
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:v1
+
+      - name: Configure AWS credentials to authenticate K8s cluster
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+        env:
+          KUBECONFIG: ${{secrets.KUBE_CONFIG}}
+
+      - name: Apply Kubernetes manifests to the fargate eks cluster
+        run: |
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
