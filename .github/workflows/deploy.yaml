@@ -90,10 +90,7 @@ jobs:
       - name: Decode and set up kubeconfig
         run: |
           echo ${{ secrets.KUBECONFIG }} | base64 -d > ~/.kube/config
-          kubectl config view
-
-      - name: Verify kubectl configuration
-        run: kubectl config view          
+          kubectl config view         
     
       - name: Apply Kubernetes manifests to the fargate eks cluster
         run: |
