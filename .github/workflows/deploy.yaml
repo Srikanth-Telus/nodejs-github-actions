@@ -76,7 +76,7 @@ jobs:
           version: 'v1.27.0'
 
       - name: Configure AWS credentials to authenticate K8s cluster
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           ws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
