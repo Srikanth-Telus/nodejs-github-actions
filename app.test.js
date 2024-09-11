@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('./index'); // Import the app from index.js
+const app = require('./app'); // Import the app from index.js
 
 describe('GET /', () => {
   it('should respond with "Hello World!"', async () => {
