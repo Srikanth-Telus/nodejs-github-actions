@@ -97,5 +97,5 @@ jobs:
     
       - name: Apply Kubernetes manifests to the fargate eks cluster
         run: |
-          kubectl apply -f deployment.yaml --validate=false
-          kubectl apply -f service.yaml --validate=false
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
