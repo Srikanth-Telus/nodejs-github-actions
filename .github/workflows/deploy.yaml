@@ -35,11 +35,15 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Login to Amazon ECR
-      #   uses: aws-actions/amazon-ecr-login@v2
-      #   with:
-      #     aws-region: ${{ secrets.AWS_REGION }}
-      #     mask-password: 'false'
+
+Build-image-publish-to-ecr:
+    needs: SonarCloud Scan
+    runs-on: ubuntu-latest
+    name: Build Image Publish to ECR
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -49,56 +53,68 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1 
+        uses: aws-actions/amazon-ecr-login@v1  # Updated to use a more recent version
 
-      - name: Build Docker image
-        run: |
-          docker build -t nodejs:v1 .
-
-      - name: Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.20.0
-        with:
-          image-ref: '767397705569.dkr.ecr.us-east-1.amazonaws.com/nodejs-github-action:v1'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+      - name: Build, tag, and push Docker image to Amazon ECR
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: Push Docker image to ECR
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: nodejs-github-action
+          IMAGE_TAG: v1
         run: |
-          docker tag nodejs:v1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:v1
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:v1
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+             
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v1  # Updated to use Docker's official login-action
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+  Image-Scan-with-ECR:
+    needs: Build-image-publish-to-ecr
+    runs-on: ubuntu-latest
+    name: Image Scan with ECR
+    steps:
+      - name: Scan Docker image with ECR Scan
+        uses: alexjurkiewicz/ecr-scan-image@v1.7.1
+        continue-on-error: true
+        with:
+          aws-region: us-east-1
+          repository: $REGISTRY/$REPOSITORY
+          tag: v1
+      - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
+
+  Image-Deploy-to-EKS:
+    needs: Image-Scan-with-ECR
+    runs-on: ubuntu-latest
+    name: Image Deploy to EKS
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v2.0
         with:
           version: 'v1.27.0'
 
-      - name: Configure AWS credentials to authenticate K8s cluster
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-        env:
-          KUBECONFIG: ${{secrets.KUBECONFIG}}
+        #env:
+          #KUBECONFIG: ${{secrets.KUBE_CONFIG}}  
 
-      - name: Update kubeconfig
+      - name: Update kubeconfig for EKS
         run: aws eks update-kubeconfig --name my-demo-nodejs --region us-east-1
-
-      - name: Decode and set up kubeconfig
-        run: |
-          echo ${{ secrets.KUBECONFIG }} | base64 -d > ~/.kube/config
-          kubectl config view         
-    
-      - name: Apply Kubernetes manifests to the fargate eks cluster
+   
+      - name: Verify kubectl configuration
+        run: kubectl config view          
+ 
+      - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
