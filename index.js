@@ -12,4 +12,4 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-module.exports = app; // Export app for testing
+module.exports = index; // Export app for testing
