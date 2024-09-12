@@ -93,7 +93,8 @@ jobs:
       - name: Verify kubectl configuration
         run: kubectl config view          
  
-      - name: Apply Kubernetes manifests
+      - name: Apply Kubernetes manifests to eks cluster
         run: |
-          kubectl apply -f deployment.yaml
+          kubectl apply -f deployment.yaml 
           kubectl apply -f service.yaml
+          
