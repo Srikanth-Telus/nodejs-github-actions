@@ -91,7 +91,7 @@ jobs:
           KUBECONFIG: ${{secrets.KUBECONFIG}}
 
       - name: Update kubeconfig
-        run: aws eks --region us-east-1 update-kubeconfig --name my-demo-nodejs
+        run: aws eks update-kubeconfig --name my-demo-nodejs --region us-east-1
 
       - name: Decode and set up kubeconfig
         run: |
