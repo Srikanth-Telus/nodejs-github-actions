@@ -35,9 +35,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -75,9 +72,6 @@ jobs:
           repository: $REGISTRY/$REPOSITORY
           tag: v1
       - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
-
-      - name: Checkout code
-        uses: actions/checkout@v2
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v2.0
