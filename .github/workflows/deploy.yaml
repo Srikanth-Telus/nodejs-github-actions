@@ -35,12 +35,6 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-
-Build-image-publish-to-ecr:
-    needs: SonarCloud Scan
-    runs-on: ubuntu-latest
-    name: Build Image Publish to ECR
-    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -72,11 +66,7 @@ Build-image-publish-to-ecr:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-  Image-Scan-with-ECR:
-    needs: Build-image-publish-to-ecr
-    runs-on: ubuntu-latest
-    name: Image Scan with ECR
-    steps:
+  
       - name: Scan Docker image with ECR Scan
         uses: alexjurkiewicz/ecr-scan-image@v1.7.1
         continue-on-error: true
@@ -86,11 +76,6 @@ Build-image-publish-to-ecr:
           tag: v1
       - run: echo "${{ steps.docker-scan.outputs.total }} total vulnerabilities."
 
-  Image-Deploy-to-EKS:
-    needs: Image-Scan-with-ECR
-    runs-on: ubuntu-latest
-    name: Image Deploy to EKS
-    steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
